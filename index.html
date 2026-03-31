@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maven — Brand Exploration Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,700;8..60,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════
+   RESET & BASE
+   ══════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-dark: #080c28;
+  --bg-sidebar: #060a22;
+  --navy: #0F1B4C;
+  --navy-deep: #101b57;
+  --lapis: #1E51CA;
+  --lapis-light: #7cbeff;
+  --cream: #FAF7F2;
+  --lime: #cdff92;
+  --orange: #FF6B35;
+  --coral: #FF4F6F;
+  --teal: #00BFA6;
+  --amber: #FFB800;
+
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --sidebar-w: 288px;
+  --tab-h: 48px;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  background: var(--bg-dark);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ══════════════════════════════════════════════
+   LAYOUT
+   ══════════════════════════════════════════════ */
+.app {
+  display: flex;
+  width: 100%; height: 100vh;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg-sidebar);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.canvas-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.canvas-area canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Sidebar Header ── */
+.sidebar-header {
+  padding: 20px 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.logo-mark {
+  width: 28px; height: 28px;
+  background: #fff;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-weight: 900;
+  font-size: 16px;
+  color: var(--bg-dark);
+  line-height: 1;
+}
+.sidebar-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+.sidebar-badge {
+  margin-left: auto;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.25);
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  margin: 16px 12px 0;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+.tab {
+  flex: 1;
+  padding: 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.4);
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+.tab:hover { color: rgba(255,255,255,0.7); }
+.tab.active {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+/* ── Controls ── */
+.controls {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 20px;
+}
+.controls::-webkit-scrollbar { width: 4px; }
+.controls::-webkit-scrollbar-track { background: transparent; }
+.controls::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.control-panel { display: none; }
+.control-panel.active { display: block; }
+
+.control-group {
+  margin-bottom: 20px;
+}
+.control-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 8px;
+  display: block;
+}
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.control-value {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Inputs ── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--lapis-light);
+  cursor: pointer;
+  border: 2px solid var(--bg-sidebar);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--lapis-light);
+  cursor: pointer;
+  border: 2px solid var(--bg-sidebar);
+}
+
+select {
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(255,255,255,0.4)' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+select:hover { border-color: rgba(255,255,255,0.2); }
+select option { background: #0a0f2a; color: #fff; }
+
+/* ── Buttons ── */
+.btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+}
+.btn-primary {
+  background: var(--lapis);
+  border-color: var(--lapis);
+}
+.btn-primary:hover {
+  background: #2460e0;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.btn-row .btn { flex: 1; }
+
+/* ── Checkboxes ── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+.toggle-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+.toggle {
+  position: relative;
+  width: 36px; height: 20px;
+  cursor: pointer;
+}
+.toggle input { display: none; }
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+.toggle input:checked + .toggle-track {
+  background: var(--lapis);
+}
+.toggle-knob {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  pointer-events: none;
+}
+.toggle input:checked ~ .toggle-knob {
+  transform: translateX(16px);
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 16px 0;
+}
+
+/* ── Sidebar Footer ── */
+.sidebar-footer {
+  padding: 12px 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.sidebar-footer .btn { font-size: 11px; }
+
+/* ── Canvas overlay ── */
+.canvas-overlay {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+.canvas-overlay .btn {
+  width: auto;
+  padding: 8px 14px;
+  font-size: 10px;
+  background: rgba(8,12,40,0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ── Drop hint ── */
+.drop-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.drop-hint.visible { opacity: 1; }
+.drop-hint-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.3;
+}
+.drop-hint-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.3);
+}
+
+/* ══════════════════════════════════════════════
+   COMPOSITION LAYER LIST
+   ══════════════════════════════════════════════ */
+.layer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.layer-item:last-child { border-bottom: none; }
+.layer-swatch {
+  width: 24px; height: 24px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.layer-info { flex: 1; }
+.layer-name {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+.layer-opacity {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  font-variant-numeric: tabular-nums;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ═════════ SIDEBAR ═════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-mark">M</div>
+      <span class="sidebar-title">Brand Toolkit</span>
+      <span class="sidebar-badge">2026</span>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="grid">Grid</button>
+      <button class="tab" data-tab="dither">Dither</button>
+      <button class="tab" data-tab="lines">Lines</button>
+      <button class="tab" data-tab="comp">Comp</button>
+    </div>
+
+    <div class="controls">
+
+      <!-- ═══ TAB 1: GRID ═══ -->
+      <div class="control-panel active" id="panel-grid">
+        <div class="control-group">
+          <label class="control-label">Cell Size</label>
+          <div class="control-row">
+            <input type="range" id="grid-cellsize" min="60" max="200" value="120" step="4">
+            <span class="control-value" id="grid-cellsize-val">120</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Density</label>
+          <div class="control-row">
+            <input type="range" id="grid-density" min="2" max="40" value="12">
+            <span class="control-value" id="grid-density-val">12%</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Color Theme</label>
+          <select id="grid-theme">
+            <option value="dark-navy">Dark Navy</option>
+            <option value="light">Light (Cream)</option>
+            <option value="lime">Lime</option>
+            <option value="lapis">Lapis</option>
+            <option value="category">Category Colors</option>
+          </select>
+        </div>
+        <div class="divider"></div>
+        <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:12px;">Shapes are placed randomly within a uniform grid. Arcs, diagonals, and circles can span 1x1, 2x2, or 3x3 cells.</p>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="grid-regenerate">Regenerate</button>
+          <button class="btn" id="grid-export">PNG</button>
+          <button class="btn" id="grid-export-svg">SVG</button>
+        </div>
+      </div>
+
+      <!-- ═══ TAB 2: DITHER ═══ -->
+      <div class="control-panel" id="panel-dither">
+        <div class="control-group">
+          <label class="control-label">Instructor Photo</label>
+          <select id="dither-photo">
+            <option value="annie-duke.jpg">Annie Duke</option>
+            <option value="wes-kao.jpg">Wes Kao</option>
+            <option value="shreyas-doshi.png">Shreyas Doshi</option>
+            <option value="ethan-evans.jpg">Ethan Evans</option>
+            <option value="marily-nika.jpg">Marily Nika</option>
+            <option value="ronny-kohavi.jpg">Ronny Kohavi</option>
+            <option value="shaw-talebi.jpg">Shaw Talebi</option>
+            <option value="vitaly-friedman.jpg">Vitaly Friedman</option>
+            <option value="dave-kline.jpg">Dave Kline</option>
+            <option value="hamel-husain.jpg">Hamel Husain</option>
+            <option value="jess-goldberg.jpg">Jess Goldberg</option>
+            <option value="aman-khan.jpg">Aman Khan</option>
+            <option value="ben-erez.jpg">Ben Erez</option>
+            <option value="caitlin-sullivan.jpg">Caitlin Sullivan</option>
+            <option value="colin-matthews.png">Colin Matthews</option>
+            <option value="elena-luneva.png">Elena Luneva</option>
+            <option value="everett-berry.jpg">Everett Berry</option>
+            <option value="jason-liu.png">Jason Liu</option>
+            <option value="bryan-bischof.png">Bryan Bischof</option>
+            <option value="hilary-gridley.png">Hilary Gridley</option>
+            <option value="mahesh-yadav.png">Mahesh Yadav</option>
+            <option value="aishwarya-reganti.jpg">Aishwarya Reganti</option>
+            <option value="xinran-ma.png">Xinran Ma</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Line Spacing</label>
+          <div class="control-row">
+            <input type="range" id="dither-spacing" min="3" max="8" value="5" step="0.5">
+            <span class="control-value" id="dither-spacing-val">5</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Min Line Width</label>
+          <div class="control-row">
+            <input type="range" id="dither-min" min="0" max="2" value="0.3" step="0.1">
+            <span class="control-value" id="dither-min-val">0.3</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Max Line Width</label>
+          <div class="control-row">
+            <input type="range" id="dither-max" min="2" max="10" value="5" step="0.25">
+            <span class="control-value" id="dither-max-val">5</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Gamma Correction</label>
+          <div class="control-row">
+            <input type="range" id="dither-gamma" min="0.3" max="2" value="0.75" step="0.05">
+            <span class="control-value" id="dither-gamma-val">0.75</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Color Scheme</label>
+          <select id="dither-scheme">
+            <option value="blue-navy">Blue on Navy</option>
+            <option value="navy-cream">Navy on Cream</option>
+            <option value="black-lime">Black on Lime</option>
+            <option value="lapis-dark">Lapis on Dark</option>
+            <option value="white-navy">White on Navy</option>
+            <option value="coral-dark">Coral on Dark</option>
+          </select>
+        </div>
+        <div class="divider"></div>
+        <div class="toggle-row">
+          <span class="toggle-label">Show Original</span>
+          <label class="toggle">
+            <input type="checkbox" id="dither-show-original">
+            <span class="toggle-track"></span>
+            <span class="toggle-knob"></span>
+          </label>
+        </div>
+        <div style="height:12px"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="dither-render">Render</button>
+          <button class="btn" id="dither-export">Export</button>
+        </div>
+      </div>
+
+      <!-- ═══ TAB 3: LINES ═══ -->
+      <div class="control-panel" id="panel-lines">
+        <div class="control-group">
+          <label class="control-label">Energy Level</label>
+          <div class="control-row">
+            <input type="range" id="lines-energy" min="10" max="100" value="60">
+            <span class="control-value" id="lines-energy-val">60%</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Max Stripe Height</label>
+          <div class="control-row">
+            <input type="range" id="lines-maxheight" min="2" max="20" value="8">
+            <span class="control-value" id="lines-maxheight-val">8</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Gap Probability</label>
+          <div class="control-row">
+            <input type="range" id="lines-gap" min="0" max="80" value="30">
+            <span class="control-value" id="lines-gap-val">30%</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Palette</label>
+          <select id="lines-palette">
+            <option value="lapis">Lapis (Blues)</option>
+            <option value="warm">Warm (Orange/Red)</option>
+            <option value="broadcast">Broadcast (Mixed)</option>
+            <option value="category">Category</option>
+            <option value="mono">Monochrome</option>
+          </select>
+        </div>
+        <div class="divider"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="lines-regenerate">Regenerate</button>
+          <button class="btn" id="lines-export">Export</button>
+        </div>
+      </div>
+
+      <!-- ═══ TAB 4: COMPOSITION ═══ -->
+      <div class="control-panel" id="panel-comp">
+        <div class="control-group">
+          <label class="control-label">Layers</label>
+          <div class="layer-item">
+            <div class="layer-swatch" style="background:var(--bg-dark)"></div>
+            <div class="layer-info"><div class="layer-name">Background</div></div>
+            <label class="toggle">
+              <input type="checkbox" id="comp-layer-bg" checked>
+              <span class="toggle-track"></span>
+              <span class="toggle-knob"></span>
+            </label>
+          </div>
+          <div class="layer-item">
+            <div class="layer-swatch" style="background:var(--navy-deep);border:1px solid rgba(255,255,255,0.1)"></div>
+            <div class="layer-info"><div class="layer-name">Grid</div></div>
+            <label class="toggle">
+              <input type="checkbox" id="comp-layer-grid" checked>
+              <span class="toggle-track"></span>
+              <span class="toggle-knob"></span>
+            </label>
+          </div>
+          <div class="layer-item">
+            <div class="layer-swatch" style="background:var(--lapis)"></div>
+            <div class="layer-info"><div class="layer-name">Portrait</div></div>
+            <label class="toggle">
+              <input type="checkbox" id="comp-layer-portrait" checked>
+              <span class="toggle-track"></span>
+              <span class="toggle-knob"></span>
+            </label>
+          </div>
+          <div class="layer-item">
+            <div class="layer-swatch" style="background:linear-gradient(var(--coral),var(--lapis))"></div>
+            <div class="layer-info"><div class="layer-name">Pattern Lines</div></div>
+            <label class="toggle">
+              <input type="checkbox" id="comp-layer-lines" checked>
+              <span class="toggle-track"></span>
+              <span class="toggle-knob"></span>
+            </label>
+          </div>
+          <div class="layer-item">
+            <div class="layer-swatch" style="background:#fff"></div>
+            <div class="layer-info"><div class="layer-name">Text</div></div>
+            <label class="toggle">
+              <input type="checkbox" id="comp-layer-text" checked>
+              <span class="toggle-track"></span>
+              <span class="toggle-knob"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">Grid Opacity</label>
+          <div class="control-row">
+            <input type="range" id="comp-grid-opacity" min="0" max="100" value="40">
+            <span class="control-value" id="comp-grid-opacity-val">40%</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Portrait Opacity</label>
+          <div class="control-row">
+            <input type="range" id="comp-portrait-opacity" min="0" max="100" value="90">
+            <span class="control-value" id="comp-portrait-opacity-val">90%</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Lines Opacity</label>
+          <div class="control-row">
+            <input type="range" id="comp-lines-opacity" min="0" max="100" value="70">
+            <span class="control-value" id="comp-lines-opacity-val">70%</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">Preset</label>
+          <select id="comp-preset">
+            <option value="hero">Hero Layout</option>
+            <option value="editorial">Editorial Spread</option>
+            <option value="poster">Poster</option>
+            <option value="card">Card Lockup</option>
+            <option value="minimal">Minimal</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">Headline</label>
+          <select id="comp-headline">
+            <option value="Learn AI from humans.">Learn AI from humans.</option>
+            <option value="Real experts. Real skills.">Real experts. Real skills.</option>
+            <option value="The next satisfying career step.">The next satisfying career step.</option>
+            <option value="Where ambition meets expertise.">Where ambition meets expertise.</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="comp-regenerate">Compose</button>
+          <button class="btn" id="comp-export">Export</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="btn" id="download-all" style="font-size:10px;">Download Current View as PNG</button>
+    </div>
+  </aside>
+
+  <!-- ═════════ CANVAS ═════════ -->
+  <div class="canvas-area" id="canvas-area">
+    <canvas id="main-canvas"></canvas>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   MAVEN BRAND EXPLORATION TOOLKIT
+   Self-contained generative brand pattern engine
+   ══════════════════════════════════════════════════════════════ */
+
+// ── Seeded PRNG (Mulberry32) ──────────────────────────────────
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+let globalSeed = Date.now();
+let rng = mulberry32(globalSeed);
+
+function newSeed() {
+  globalSeed = Date.now();
+  rng = mulberry32(globalSeed);
+}
+
+// ── Color Palettes ────────────────────────────────────────────
+const PALETTES = {
+  lapis: ['#0A1240', '#101b57', '#1E51CA', '#3A6FE0', '#7cbeff', '#B0D4FF'],
+  warm: ['#FF6B35', '#FF4F6F', '#FFB800', '#E84D1A', '#FF8A5C', '#FFD166'],
+  broadcast: ['#1E51CA', '#FF6B35', '#00BFA6', '#FFB800', '#FF4F6F', '#7cbeff', '#cdff92'],
+  category: ['#1E51CA', '#FF6B35', '#00BFA6', '#9B5DE5', '#FFB800', '#FF4F6F', '#0F1B4C'],
+  mono: ['#0F1B4C', '#1a2a6a', '#253988', '#3048a6', '#3b57c4', '#4666e2'],
+};
+
+const THEMES = {
+  'dark-navy': { bg: '#080c28', line: '#101b57', accent: '#1E51CA' },
+  'light':     { bg: '#FAF7F2', line: '#0F1B4C', accent: '#1E51CA' },
+  'lime':      { bg: '#cdff92', line: '#0F1B4C', accent: '#1E51CA' },
+  'lapis':     { bg: '#080c28', line: '#1E51CA', accent: '#7cbeff' },
+  'category':  { bg: '#080c28', line: '#1E51CA', accent: '#FF6B35' },
+};
+
+const DITHER_SCHEMES = {
+  'blue-navy':  { bg: '#080c28', line: '#1E51CA' },
+  'navy-cream': { bg: '#FAF7F2', line: '#0F1B4C' },
+  'black-lime': { bg: '#cdff92', line: '#0F1B4C' },
+  'lapis-dark': { bg: '#080c28', line: '#3A6FE0' },
+  'white-navy': { bg: '#0F1B4C', line: '#ffffff' },
+  'coral-dark': { bg: '#080c28', line: '#FF4F6F' },
+};
+
+// ── Canvas Setup ──────────────────────────────────────────────
+const canvasArea = document.getElementById('canvas-area');
+const mainCanvas = document.getElementById('main-canvas');
+const ctx = mainCanvas.getContext('2d');
+
+let canvasW, canvasH, dpr;
+
+function resizeCanvas() {
+  dpr = window.devicePixelRatio || 1;
+  const rect = canvasArea.getBoundingClientRect();
+  canvasW = rect.width;
+  canvasH = rect.height;
+  mainCanvas.width = canvasW * dpr;
+  mainCanvas.height = canvasH * dpr;
+  mainCanvas.style.width = canvasW + 'px';
+  mainCanvas.style.height = canvasH + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  renderCurrentTab();
+});
+
+// ── Tab Navigation ────────────────────────────────────────────
+let currentTab = 'grid';
+const tabs = document.querySelectorAll('.tab');
+const panels = document.querySelectorAll('.control-panel');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    panels.forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('panel-' + tab.dataset.tab);
+    if (panel) panel.classList.add('active');
+    currentTab = tab.dataset.tab;
+    renderCurrentTab();
+  });
+});
+
+function renderCurrentTab() {
+  switch (currentTab) {
+    case 'grid': renderGrid(); break;
+    case 'dither': renderDither(); break;
+    case 'lines': renderLines(); break;
+    case 'comp': renderComposition(); break;
+  }
+}
+
+// ── Helper: slider + value syncing ────────────────────────────
+function syncSlider(id, suffix, cb) {
+  const slider = document.getElementById(id);
+  const display = document.getElementById(id + '-val');
+  if (!slider || !display) return;
+  const update = () => {
+    display.textContent = slider.value + (suffix || '');
+    if (cb) cb(parseFloat(slider.value));
+  };
+  slider.addEventListener('input', update);
+  update();
+  return slider;
+}
+
+// ── Sub-pixel snap ────────────────────────────────────────────
+function snap(v) {
+  return Math.round(v * dpr) / dpr;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TAB 1 — ARCHITECTURAL GRID GENERATOR
+   Multi-cell shapes (1x1, 2x2, 3x3) with occupancy-based placement
+   ══════════════════════════════════════════════════════════════ */
+
+// All 20 shape definitions
+const GRID_SHAPES = [
+  // 1x1 arcs (weight 10 each = 40 total)
+  { id: 'arc_1x1_TL', size: 1, weight: 10, draw(c, x, y, s) { c.beginPath(); c.arc(x, y, s, 0, Math.PI / 2); c.stroke(); } },
+  { id: 'arc_1x1_TR', size: 1, weight: 10, draw(c, x, y, s) { c.beginPath(); c.arc(x + s, y, s, Math.PI / 2, Math.PI); c.stroke(); } },
+  { id: 'arc_1x1_BL', size: 1, weight: 10, draw(c, x, y, s) { c.beginPath(); c.arc(x, y + s, s, -Math.PI / 2, 0); c.stroke(); } },
+  { id: 'arc_1x1_BR', size: 1, weight: 10, draw(c, x, y, s) { c.beginPath(); c.arc(x + s, y + s, s, Math.PI, Math.PI * 1.5); c.stroke(); } },
+
+  // 2x2 arcs (weight 5 each = 20 total)
+  { id: 'arc_2x2_TL', size: 2, weight: 5, draw(c, x, y, s) { c.beginPath(); c.arc(x, y, s * 2, 0, Math.PI / 2); c.stroke(); } },
+  { id: 'arc_2x2_TR', size: 2, weight: 5, draw(c, x, y, s) { c.beginPath(); c.arc(x + s * 2, y, s * 2, Math.PI / 2, Math.PI); c.stroke(); } },
+  { id: 'arc_2x2_BL', size: 2, weight: 5, draw(c, x, y, s) { c.beginPath(); c.arc(x, y + s * 2, s * 2, -Math.PI / 2, 0); c.stroke(); } },
+  { id: 'arc_2x2_BR', size: 2, weight: 5, draw(c, x, y, s) { c.beginPath(); c.arc(x + s * 2, y + s * 2, s * 2, Math.PI, Math.PI * 1.5); c.stroke(); } },
+
+  // 3x3 arcs (weight 2 each = 8 total)
+  { id: 'arc_3x3_TL', size: 3, weight: 2, draw(c, x, y, s) { c.beginPath(); c.arc(x, y, s * 3, 0, Math.PI / 2); c.stroke(); } },
+  { id: 'arc_3x3_TR', size: 3, weight: 2, draw(c, x, y, s) { c.beginPath(); c.arc(x + s * 3, y, s * 3, Math.PI / 2, Math.PI); c.stroke(); } },
+  { id: 'arc_3x3_BL', size: 3, weight: 2, draw(c, x, y, s) { c.beginPath(); c.arc(x, y + s * 3, s * 3, -Math.PI / 2, 0); c.stroke(); } },
+  { id: 'arc_3x3_BR', size: 3, weight: 2, draw(c, x, y, s) { c.beginPath(); c.arc(x + s * 3, y + s * 3, s * 3, Math.PI, Math.PI * 1.5); c.stroke(); } },
+
+  // 1x1 diagonals (weight 8 each = 16 total)
+  { id: 'diag_1x1_TLBR', size: 1, weight: 8, draw(c, x, y, s) { c.beginPath(); c.moveTo(x, y); c.lineTo(x + s, y + s); c.stroke(); } },
+  { id: 'diag_1x1_TRBL', size: 1, weight: 8, draw(c, x, y, s) { c.beginPath(); c.moveTo(x + s, y); c.lineTo(x, y + s); c.stroke(); } },
+
+  // 2x2 diagonals (weight 4 each = 8 total)
+  { id: 'diag_2x2_TLBR', size: 2, weight: 4, draw(c, x, y, s) { c.beginPath(); c.moveTo(x, y); c.lineTo(x + s * 2, y + s * 2); c.stroke(); } },
+  { id: 'diag_2x2_TRBL', size: 2, weight: 4, draw(c, x, y, s) { c.beginPath(); c.moveTo(x + s * 2, y); c.lineTo(x, y + s * 2); c.stroke(); } },
+
+  // 3x3 diagonals (weight 2 each = 4 total)
+  { id: 'diag_3x3_TLBR', size: 3, weight: 2, draw(c, x, y, s) { c.beginPath(); c.moveTo(x, y); c.lineTo(x + s * 3, y + s * 3); c.stroke(); } },
+  { id: 'diag_3x3_TRBL', size: 3, weight: 2, draw(c, x, y, s) { c.beginPath(); c.moveTo(x + s * 3, y); c.lineTo(x, y + s * 3); c.stroke(); } },
+
+  // 2x2 circle (weight 4)
+  { id: 'circle_2x2', size: 2, weight: 4, draw(c, x, y, s) { c.beginPath(); c.arc(x + s, y + s, s, 0, Math.PI * 2); c.stroke(); } },
+
+  // 3x3 circle (weight 2)
+  { id: 'circle_3x3', size: 3, weight: 2, draw(c, x, y, s) { c.beginPath(); c.arc(x + s * 1.5, y + s * 1.5, s * 1.5, 0, Math.PI * 2); c.stroke(); } },
+];
+
+// Pre-compute cumulative weights for weighted random selection
+const GRID_TOTAL_WEIGHT = GRID_SHAPES.reduce((sum, s) => sum + s.weight, 0);
+
+function pickWeightedShape(rngFn) {
+  let roll = rngFn() * GRID_TOTAL_WEIGHT;
+  for (let i = 0; i < GRID_SHAPES.length; i++) {
+    roll -= GRID_SHAPES[i].weight;
+    if (roll <= 0) return GRID_SHAPES[i];
+  }
+  return GRID_SHAPES[GRID_SHAPES.length - 1];
+}
+
+/**
+ * Phi-grid density map: shapes cluster around golden ratio focal points
+ * with Fibonacci-inspired falloff, creating intentional composition.
+ */
+const PHI = 1.618033988749895;
+const PHI_MINOR = 1 / PHI; // ≈ 0.382
+const PHI_MAJOR = 1 - PHI_MINOR; // ≈ 0.618
+
+function computePhiDensity(col, row, cols, rows) {
+  const focalPoints = [
+    [cols * PHI_MINOR, rows * PHI_MINOR],
+    [cols * PHI_MAJOR, rows * PHI_MINOR],
+    [cols * PHI_MINOR, rows * PHI_MAJOR],
+    [cols * PHI_MAJOR, rows * PHI_MAJOR],
+  ];
+
+  const influenceRadius = Math.sqrt(cols * cols + rows * rows) * 0.38;
+
+  let minDist = Infinity;
+  for (const [fx, fy] of focalPoints) {
+    const d = Math.hypot(col + 0.5 - fx, row + 0.5 - fy);
+    if (d < minDist) minDist = d;
+  }
+
+  const n = Math.min(1, minDist / influenceRadius);
+  const phiFalloff = Math.pow(Math.max(0, 1 - n * n), PHI);
+  return 0.06 + 0.94 * phiFalloff;
+}
+
+function pickShapeForDensity(rngFn, localDensity) {
+  let totalWeight = 0;
+  const weights = GRID_SHAPES.map(s => {
+    let w = s.weight;
+    if (s.size === 3) w *= (0.3 + localDensity * 4);
+    else if (s.size === 2) w *= (0.5 + localDensity * 2);
+    totalWeight += w;
+    return w;
+  });
+
+  let roll = rngFn() * totalWeight;
+  for (let i = 0; i < GRID_SHAPES.length; i++) {
+    roll -= weights[i];
+    if (roll <= 0) return GRID_SHAPES[i];
+  }
+  return GRID_SHAPES[GRID_SHAPES.length - 1];
+}
+
+/**
+ * Place shapes using phi-grid density: golden ratio focal points control
+ * where shapes cluster, with larger shapes near focal points.
+ */
+function placeShapes(cols, rows, numShapes, rngFn) {
+  const occupied = [];
+  for (let r = 0; r < rows; r++) {
+    occupied[r] = new Array(cols).fill(false);
+  }
+
+  const placements = [];
+  const maxAttempts = 160;
+
+  for (let i = 0; i < numShapes; i++) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const col = Math.floor(rngFn() * cols);
+      const row = Math.floor(rngFn() * rows);
+
+      const d = computePhiDensity(col, row, cols, rows);
+      if (rngFn() > d) continue;
+
+      const shape = pickShapeForDensity(rngFn, d);
+      const sz = shape.size;
+
+      if (col + sz > cols || row + sz > rows) continue;
+
+      let blocked = false;
+      for (let dr = 0; dr < sz && !blocked; dr++) {
+        for (let dc = 0; dc < sz && !blocked; dc++) {
+          if (occupied[row + dr][col + dc]) blocked = true;
+        }
+      }
+      if (blocked) continue;
+
+      for (let dr = 0; dr < sz; dr++) {
+        for (let dc = 0; dc < sz; dc++) {
+          occupied[row + dr][col + dc] = true;
+        }
+      }
+
+      placements.push({ shape, col, row });
+      break;
+    }
+  }
+
+  return placements;
+}
+
+/**
+ * Core grid rendering — used by both the Grid tab and the Composition offscreen.
+ * Draws onto the provided context `c` at dimensions `w` x `h`.
+ */
+function renderGridCore(c, w, h, cellSize, density, themeKey, seedOffset, options) {
+  const theme = THEMES[themeKey];
+  const savedRng = rng;
+  rng = mulberry32(globalSeed + (seedOffset || 0));
+  const skipBg = options && options.skipBackground;
+
+  c.clearRect(0, 0, w, h);
+  if (!skipBg) {
+    c.fillStyle = theme.bg;
+    c.fillRect(0, 0, w, h);
+  }
+
+  const cols = Math.floor(w / cellSize);
+  const rows = Math.floor(h / cellSize);
+  if (cols < 1 || rows < 1) { rng = savedRng; return; }
+
+  const gridW = cols * cellSize;
+  const gridH = rows * cellSize;
+  const offsetX = (w - gridW) / 2;
+  const offsetY = (h - gridH) / 2;
+
+  const lineWeight = 1.5;
+
+  const categoryColors = themeKey === 'category'
+    ? ['#1E51CA', '#FF6B35', '#00BFA6', '#9B5DE5', '#FFB800', '#FF4F6F']
+    : null;
+
+  const totalCells = cols * rows;
+  const numShapes = Math.max(1, Math.round(totalCells * density / 100));
+  const placements = placeShapes(cols, rows, numShapes, rng);
+
+  // Grid lines (structural layer — same weight and color as shapes)
+  c.save();
+  c.strokeStyle = theme.line;
+  c.lineWidth = lineWeight;
+  c.lineCap = 'round';
+
+  for (let r = 0; r <= rows; r++) {
+    const y = snap(offsetY + r * cellSize);
+    c.beginPath();
+    c.moveTo(offsetX, y);
+    c.lineTo(offsetX + gridW, y);
+    c.stroke();
+  }
+  for (let col = 0; col <= cols; col++) {
+    const x = snap(offsetX + col * cellSize);
+    c.beginPath();
+    c.moveTo(x, offsetY);
+    c.lineTo(x, offsetY + gridH);
+    c.stroke();
+  }
+  c.restore();
+
+  // Shapes (same weight and color as grid lines)
+  c.lineCap = 'round';
+  c.lineJoin = 'round';
+  c.lineWidth = lineWeight;
+
+  for (const p of placements) {
+    const x = snap(offsetX + p.col * cellSize);
+    const y = snap(offsetY + p.row * cellSize);
+
+    c.save();
+    if (categoryColors) {
+      c.strokeStyle = categoryColors[Math.floor(rng() * categoryColors.length)];
+    } else {
+      c.strokeStyle = theme.line;
+    }
+    c.lineWidth = lineWeight;
+    p.shape.draw(c, x, y, cellSize);
+    c.restore();
+  }
+
+  rng = savedRng;
+}
+
+function renderGrid() {
+  const cellSize = parseInt(document.getElementById('grid-cellsize').value);
+  const density = parseInt(document.getElementById('grid-density').value);
+  const themeKey = document.getElementById('grid-theme').value;
+  renderGridCore(ctx, canvasW, canvasH, cellSize, density, themeKey, 0);
+}
+
+// ── Grid controls ──
+syncSlider('grid-cellsize', 'px', () => renderGrid());
+syncSlider('grid-density', '%', () => renderGrid());
+document.getElementById('grid-theme').addEventListener('change', () => renderGrid());
+document.getElementById('grid-regenerate').addEventListener('click', () => {
+  newSeed();
+  renderGrid();
+});
+
+
+/* ══════════════════════════════════════════════════════════════
+   TAB 2 — DITHER / STIPPLING EFFECT
+   ══════════════════════════════════════════════════════════════ */
+
+let ditherImage = null;
+let ditherImageData = null;
+
+function loadDitherImage(filename) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      ditherImage = img;
+      // Extract pixel data
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = img.naturalWidth;
+      tempCanvas.height = img.naturalHeight;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(img, 0, 0);
+      ditherImageData = {
+        data: tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height),
+        width: tempCanvas.width,
+        height: tempCanvas.height,
+      };
+      resolve();
+    };
+    img.onerror = () => {
+      // Try an alternative path
+      reject(new Error('Could not load image: ' + filename));
+    };
+    img.src = '../images/' + filename;
+  });
+}
+
+function sampleColumn(imgData, colX, stripWidth) {
+  const { data, width, height } = imgData;
+  const pixels = data.data;
+  let totalLum = 0;
+  let count = 0;
+
+  const startX = Math.max(0, Math.floor(colX - stripWidth / 2));
+  const endX = Math.min(width - 1, Math.floor(colX + stripWidth / 2));
+
+  for (let y = 0; y < height; y++) {
+    for (let x = startX; x <= endX; x++) {
+      const idx = (y * width + x) * 4;
+      const r = pixels[idx];
+      const g = pixels[idx + 1];
+      const b = pixels[idx + 2];
+      // BT.709 perceptual luminance
+      const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      totalLum += lum;
+      count++;
+    }
+  }
+
+  return count > 0 ? totalLum / count / 255 : 0.5;
+}
+
+function sampleColumnProfile(imgData, colX, stripWidth, numSamples) {
+  const { data, width, height } = imgData;
+  const pixels = data.data;
+  const profile = new Float32Array(numSamples);
+
+  const startX = Math.max(0, Math.floor(colX - stripWidth / 2));
+  const endX = Math.min(width - 1, Math.floor(colX + stripWidth / 2));
+
+  for (let i = 0; i < numSamples; i++) {
+    const yCenter = (i / numSamples) * height;
+    const yStart = Math.max(0, Math.floor(yCenter - height / numSamples / 2));
+    const yEnd = Math.min(height - 1, Math.floor(yCenter + height / numSamples / 2));
+
+    let totalLum = 0;
+    let count = 0;
+
+    for (let y = yStart; y <= yEnd; y++) {
+      for (let x = startX; x <= endX; x++) {
+        const idx = (y * width + x) * 4;
+        const r = pixels[idx];
+        const g = pixels[idx + 1];
+        const b = pixels[idx + 2];
+        totalLum += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        count++;
+      }
+    }
+
+    profile[i] = count > 0 ? totalLum / count / 255 : 0.5;
+  }
+
+  return profile;
+}
+
+function smoothArray(arr, passes) {
+  let result = new Float32Array(arr);
+  for (let p = 0; p < passes; p++) {
+    const temp = new Float32Array(result.length);
+    for (let i = 0; i < result.length; i++) {
+      const prev = i > 0 ? result[i - 1] : result[i];
+      const next = i < result.length - 1 ? result[i + 1] : result[i];
+      temp[i] = (prev + result[i] + next) / 3;
+    }
+    result = temp;
+  }
+  return result;
+}
+
+function renderDither() {
+  const spacing = parseFloat(document.getElementById('dither-spacing').value);
+  const minWidth = parseFloat(document.getElementById('dither-min').value);
+  const maxWidth = parseFloat(document.getElementById('dither-max').value);
+  const gamma = parseFloat(document.getElementById('dither-gamma').value);
+  const schemeKey = document.getElementById('dither-scheme').value;
+  const showOriginal = document.getElementById('dither-show-original').checked;
+  const scheme = DITHER_SCHEMES[schemeKey];
+
+  ctx.clearRect(0, 0, canvasW, canvasH);
+  ctx.fillStyle = scheme.bg;
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  if (!ditherImageData) {
+    // Show loading hint
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.font = '14px ' + getComputedStyle(document.body).fontFamily;
+    ctx.textAlign = 'center';
+    ctx.fillText('Loading image...', canvasW / 2, canvasH / 2);
+    // Load first image
+    loadDitherImage(document.getElementById('dither-photo').value).then(() => renderDither());
+    return;
+  }
+
+  const img = ditherImage;
+  const imgData = ditherImageData;
+
+  // Compute display dimensions (fit image in canvas)
+  const imgAspect = imgData.width / imgData.height;
+  const canvasAspect = canvasW / canvasH;
+
+  let drawW, drawH, drawX, drawY;
+  if (imgAspect > canvasAspect) {
+    drawW = canvasW;
+    drawH = canvasW / imgAspect;
+  } else {
+    drawH = canvasH;
+    drawW = canvasH * imgAspect;
+  }
+  drawX = (canvasW - drawW) / 2;
+  drawY = (canvasH - drawH) / 2;
+
+  // Show original image at low opacity behind
+  if (showOriginal) {
+    ctx.save();
+    ctx.globalAlpha = 0.15;
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    ctx.restore();
+  }
+
+  // Render vertical lines
+  const numColumns = Math.floor(drawW / spacing);
+  const stripWidthPx = (spacing / drawW) * imgData.width;
+  const numSamples = Math.ceil(drawH / 2); // Vertical resolution
+
+  ctx.strokeStyle = scheme.line;
+  ctx.lineCap = 'round';
+
+  for (let col = 0; col < numColumns; col++) {
+    const canvasX = snap(drawX + col * spacing + spacing / 2);
+    const imgX = (col * spacing + spacing / 2) / drawW * imgData.width;
+
+    // Get luminance profile for this column
+    const profile = sampleColumnProfile(imgData, imgX, stripWidthPx, numSamples);
+    const smoothed = smoothArray(profile, 3);
+
+    // Draw the line segments with varying width
+    for (let i = 0; i < numSamples - 1; i++) {
+      const y1 = drawY + (i / numSamples) * drawH;
+      const y2 = drawY + ((i + 1) / numSamples) * drawH;
+
+      // Invert luminance: dark areas = wider lines
+      const lum = smoothed[i];
+      const darkness = 1 - lum;
+      const corrected = Math.pow(darkness, gamma);
+      const lineW = minWidth + corrected * (maxWidth - minWidth);
+
+      ctx.lineWidth = lineW;
+      ctx.beginPath();
+      ctx.moveTo(canvasX, snap(y1));
+      ctx.lineTo(canvasX, snap(y2));
+      ctx.stroke();
+    }
+  }
+}
+
+// ── Dither controls ──
+document.getElementById('dither-photo').addEventListener('change', (e) => {
+  ditherImageData = null;
+  ditherImage = null;
+  loadDitherImage(e.target.value).then(() => renderDither());
+});
+
+syncSlider('dither-spacing', 'px', () => renderDither());
+syncSlider('dither-min', '', () => renderDither());
+syncSlider('dither-max', '', () => renderDither());
+syncSlider('dither-gamma', '', () => renderDither());
+document.getElementById('dither-scheme').addEventListener('change', () => renderDither());
+document.getElementById('dither-show-original').addEventListener('change', () => renderDither());
+document.getElementById('dither-render').addEventListener('click', () => renderDither());
+
+
+/* ══════════════════════════════════════════════════════════════
+   TAB 3 — PATTERN LINES
+   ══════════════════════════════════════════════════════════════ */
+
+function renderLines() {
+  const energy = parseInt(document.getElementById('lines-energy').value) / 100;
+  const maxHeight = parseInt(document.getElementById('lines-maxheight').value);
+  const gapProb = parseInt(document.getElementById('lines-gap').value) / 100;
+  const paletteKey = document.getElementById('lines-palette').value;
+  const palette = PALETTES[paletteKey];
+
+  rng = mulberry32(globalSeed);
+
+  ctx.clearRect(0, 0, canvasW, canvasH);
+  ctx.fillStyle = '#080c28';
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  let y = 0;
+
+  while (y < canvasH) {
+    // Stripe height based on energy
+    const baseH = 1 + rng() * (maxHeight - 1);
+    const h = Math.max(1, Math.round(baseH * (0.3 + 0.7 * energy)));
+
+    // Pick color with weighted random
+    const colorIdx = Math.floor(rng() * palette.length);
+    const color = palette[colorIdx];
+
+    // Alpha variation for depth
+    const alpha = 0.4 + rng() * 0.6;
+
+    // Sometimes skip (gap)
+    if (rng() > gapProb) {
+      ctx.fillStyle = color;
+      ctx.globalAlpha = alpha;
+      ctx.fillRect(0, snap(y), canvasW, h);
+      ctx.globalAlpha = 1;
+    }
+
+    y += h;
+
+    // Add gap
+    if (rng() < gapProb) {
+      const gap = 1 + Math.floor(rng() * 3);
+      y += gap;
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ── Lines controls ──
+syncSlider('lines-energy', '%', () => renderLines());
+syncSlider('lines-maxheight', 'px', () => renderLines());
+syncSlider('lines-gap', '%', () => renderLines());
+document.getElementById('lines-palette').addEventListener('change', () => renderLines());
+document.getElementById('lines-regenerate').addEventListener('click', () => {
+  newSeed();
+  renderLines();
+});
+
+
+/* ══════════════════════════════════════════════════════════════
+   TAB 4 — COMPOSITION
+   ══════════════════════════════════════════════════════════════ */
+
+// Offscreen canvases for each layer
+let offGrid, offPortrait, offLines;
+
+function createOffscreen(w, h) {
+  const c = document.createElement('canvas');
+  c.width = w * dpr;
+  c.height = h * dpr;
+  const cx = c.getContext('2d');
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { canvas: c, ctx: cx, w, h };
+}
+
+function renderGridToOffscreen(off) {
+  renderGridCore(off.ctx, off.w, off.h, 100, 12, 'dark-navy', 1, { skipBackground: true });
+}
+
+function renderPortraitToOffscreen(off) {
+  const { ctx: octx, w, h } = off;
+
+  octx.clearRect(0, 0, w, h);
+
+  if (!ditherImageData || !ditherImage) return;
+
+  const img = ditherImage;
+  const imgData = ditherImageData;
+  const spacing = 5;
+  const minWidth = 0.3;
+  const maxWidth = 5;
+  const gamma = 0.75;
+
+  // Position portrait in center-right area
+  const imgAspect = imgData.width / imgData.height;
+  const regionW = w * 0.45;
+  const regionH = h * 0.85;
+  const regionX = w * 0.5;
+  const regionY = h * 0.075;
+
+  let drawW, drawH;
+  if (imgAspect > regionW / regionH) {
+    drawW = regionW;
+    drawH = regionW / imgAspect;
+  } else {
+    drawH = regionH;
+    drawW = regionH * imgAspect;
+  }
+
+  const drawX = regionX + (regionW - drawW) / 2;
+  const drawY = regionY + (regionH - drawH) / 2;
+
+  const numColumns = Math.floor(drawW / spacing);
+  const stripWidthPx = (spacing / drawW) * imgData.width;
+  const numSamples = Math.ceil(drawH / 2);
+
+  octx.strokeStyle = '#1E51CA';
+  octx.lineCap = 'round';
+
+  for (let col = 0; col < numColumns; col++) {
+    const canvasX = drawX + col * spacing + spacing / 2;
+    const imgX = (col * spacing + spacing / 2) / drawW * imgData.width;
+
+    const profile = sampleColumnProfile(imgData, imgX, stripWidthPx, numSamples);
+    const smoothed = smoothArray(profile, 3);
+
+    for (let i = 0; i < numSamples - 1; i++) {
+      const y1 = drawY + (i / numSamples) * drawH;
+      const y2 = drawY + ((i + 1) / numSamples) * drawH;
+
+      const lum = smoothed[i];
+      const darkness = 1 - lum;
+      const corrected = Math.pow(darkness, gamma);
+      const lineW = minWidth + corrected * (maxWidth - minWidth);
+
+      octx.lineWidth = lineW;
+      octx.beginPath();
+      octx.moveTo(canvasX, y1);
+      octx.lineTo(canvasX, y2);
+      octx.stroke();
+    }
+  }
+}
+
+function renderLinesToOffscreen(off, preset) {
+  const { ctx: octx, w, h } = off;
+  const savedRng = rng;
+  rng = mulberry32(globalSeed + 2);
+
+  octx.clearRect(0, 0, w, h);
+
+  const palette = PALETTES.broadcast;
+  let y, regionY, regionH;
+
+  switch (preset) {
+    case 'poster':
+      regionY = 0; regionH = h;
+      break;
+    case 'editorial':
+      regionY = h * 0.7; regionH = h * 0.3;
+      break;
+    case 'card':
+      regionY = 0; regionH = h * 0.15;
+      break;
+    default:
+      regionY = h * 0.85; regionH = h * 0.15;
+  }
+
+  y = regionY;
+  while (y < regionY + regionH) {
+    const h2 = 1 + Math.floor(rng() * 7);
+    const color = palette[Math.floor(rng() * palette.length)];
+    const alpha = 0.4 + rng() * 0.6;
+
+    if (rng() > 0.25) {
+      octx.fillStyle = color;
+      octx.globalAlpha = alpha;
+      octx.fillRect(0, y, w, h2);
+    }
+
+    y += h2;
+    if (rng() < 0.3) y += 1 + Math.floor(rng() * 3);
+  }
+
+  octx.globalAlpha = 1;
+  rng = savedRng;
+}
+
+function renderComposition() {
+  const showBg = document.getElementById('comp-layer-bg').checked;
+  const showGrid = document.getElementById('comp-layer-grid').checked;
+  const showPortrait = document.getElementById('comp-layer-portrait').checked;
+  const showLines = document.getElementById('comp-layer-lines').checked;
+  const showText = document.getElementById('comp-layer-text').checked;
+
+  const gridOpacity = parseInt(document.getElementById('comp-grid-opacity').value) / 100;
+  const portraitOpacity = parseInt(document.getElementById('comp-portrait-opacity').value) / 100;
+  const linesOpacity = parseInt(document.getElementById('comp-lines-opacity').value) / 100;
+
+  const preset = document.getElementById('comp-preset').value;
+  const headline = document.getElementById('comp-headline').value;
+
+  // Recreate offscreen canvases at current size
+  offGrid = createOffscreen(canvasW, canvasH);
+  offPortrait = createOffscreen(canvasW, canvasH);
+  offLines = createOffscreen(canvasW, canvasH);
+
+  // Render each layer to its offscreen canvas
+  renderGridToOffscreen(offGrid);
+  renderPortraitToOffscreen(offPortrait);
+  renderLinesToOffscreen(offLines, preset);
+
+  // Composite to main canvas
+  ctx.clearRect(0, 0, canvasW, canvasH);
+
+  // Layer 1: Background
+  if (showBg) {
+    ctx.fillStyle = '#080c28';
+    ctx.fillRect(0, 0, canvasW, canvasH);
+  }
+
+  // Layer 2: Grid
+  if (showGrid) {
+    ctx.save();
+    ctx.globalAlpha = gridOpacity;
+    ctx.drawImage(offGrid.canvas, 0, 0, canvasW, canvasH);
+    ctx.restore();
+  }
+
+  // Layer 3: Portrait (dither)
+  if (showPortrait) {
+    ctx.save();
+    ctx.globalAlpha = portraitOpacity;
+    ctx.drawImage(offPortrait.canvas, 0, 0, canvasW, canvasH);
+    ctx.restore();
+  }
+
+  // Layer 4: Pattern lines
+  if (showLines) {
+    ctx.save();
+    ctx.globalAlpha = linesOpacity;
+    ctx.globalCompositeOperation = 'screen';
+    ctx.drawImage(offLines.canvas, 0, 0, canvasW, canvasH);
+    ctx.restore();
+  }
+
+  // Layer 5: Text
+  if (showText) {
+    ctx.save();
+
+    let textX, textY, textMaxW, textAlign, fontSize;
+
+    switch (preset) {
+      case 'editorial':
+        textX = canvasW * 0.06;
+        textY = canvasH * 0.45;
+        textMaxW = canvasW * 0.38;
+        textAlign = 'left';
+        fontSize = Math.min(canvasW * 0.045, 56);
+        break;
+      case 'poster':
+        textX = canvasW * 0.5;
+        textY = canvasH * 0.5;
+        textMaxW = canvasW * 0.6;
+        textAlign = 'center';
+        fontSize = Math.min(canvasW * 0.06, 72);
+        break;
+      case 'card':
+        textX = canvasW * 0.06;
+        textY = canvasH * 0.88;
+        textMaxW = canvasW * 0.5;
+        textAlign = 'left';
+        fontSize = Math.min(canvasW * 0.035, 42);
+        break;
+      case 'minimal':
+        textX = canvasW * 0.5;
+        textY = canvasH * 0.5;
+        textMaxW = canvasW * 0.7;
+        textAlign = 'center';
+        fontSize = Math.min(canvasW * 0.05, 64);
+        break;
+      default: // hero
+        textX = canvasW * 0.06;
+        textY = canvasH * 0.38;
+        textMaxW = canvasW * 0.42;
+        textAlign = 'left';
+        fontSize = Math.min(canvasW * 0.05, 64);
+    }
+
+    // Category label above headline
+    ctx.font = `600 ${Math.max(10, fontSize * 0.2)}px ${getComputedStyle(document.body).fontFamily}`;
+    ctx.fillStyle = '#7cbeff';
+    ctx.textAlign = textAlign;
+    ctx.letterSpacing = '0.1em';
+    ctx.fillText('MAVEN', textX, textY - fontSize * 0.6);
+
+    // Headline
+    ctx.font = `900 ${fontSize}px 'Source Serif 4', Georgia, serif`;
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = textAlign;
+
+    // Word-wrap headline
+    const words = headline.split(' ');
+    let line = '';
+    let lineY = textY;
+    const lineHeight = fontSize * 1.1;
+
+    for (const word of words) {
+      const testLine = line + (line ? ' ' : '') + word;
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > textMaxW && line) {
+        ctx.fillText(line, textX, lineY);
+        line = word;
+        lineY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, textX, lineY);
+
+    // Subtitle below
+    const subtitleY = lineY + lineHeight * 1.2;
+    ctx.font = `400 ${Math.max(12, fontSize * 0.26)}px ${getComputedStyle(document.body).fontFamily}`;
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.fillText('Expert-led courses for ambitious professionals', textX, subtitleY);
+
+    ctx.restore();
+  }
+}
+
+// ── Composition controls ──
+syncSlider('comp-grid-opacity', '%', () => renderComposition());
+syncSlider('comp-portrait-opacity', '%', () => renderComposition());
+syncSlider('comp-lines-opacity', '%', () => renderComposition());
+
+['comp-layer-bg', 'comp-layer-grid', 'comp-layer-portrait', 'comp-layer-lines', 'comp-layer-text'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => renderComposition());
+});
+
+document.getElementById('comp-preset').addEventListener('change', () => renderComposition());
+document.getElementById('comp-headline').addEventListener('change', () => renderComposition());
+document.getElementById('comp-regenerate').addEventListener('click', () => {
+  newSeed();
+  renderComposition();
+});
+
+
+/* ══════════════════════════════════════════════════════════════
+   EXPORT / DOWNLOAD
+   ══════════════════════════════════════════════════════════════ */
+
+function downloadCanvas() {
+  const link = document.createElement('a');
+  link.download = 'maven-brand-' + currentTab + '-' + Date.now() + '.png';
+  link.href = mainCanvas.toDataURL('image/png');
+  link.click();
+}
+
+function shapeToSVG(shape, x, y, s) {
+  function arc(cx, cy, r, a0, a1) {
+    const sx = cx + r * Math.cos(a0);
+    const sy = cy + r * Math.sin(a0);
+    const ex = cx + r * Math.cos(a1);
+    const ey = cy + r * Math.sin(a1);
+    const large = Math.abs(a1 - a0) > Math.PI ? 1 : 0;
+    return `<path d="M ${sx.toFixed(2)} ${sy.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${ex.toFixed(2)} ${ey.toFixed(2)}" />`;
+  }
+  function line(x1, y1, x2, y2) {
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" />`;
+  }
+
+  switch (shape.id) {
+    case 'arc_1x1_TL': return arc(x, y, s, 0, Math.PI / 2);
+    case 'arc_1x1_TR': return arc(x + s, y, s, Math.PI / 2, Math.PI);
+    case 'arc_1x1_BL': return arc(x, y + s, s, -Math.PI / 2, 0);
+    case 'arc_1x1_BR': return arc(x + s, y + s, s, Math.PI, Math.PI * 1.5);
+    case 'arc_2x2_TL': return arc(x, y, s * 2, 0, Math.PI / 2);
+    case 'arc_2x2_TR': return arc(x + s * 2, y, s * 2, Math.PI / 2, Math.PI);
+    case 'arc_2x2_BL': return arc(x, y + s * 2, s * 2, -Math.PI / 2, 0);
+    case 'arc_2x2_BR': return arc(x + s * 2, y + s * 2, s * 2, Math.PI, Math.PI * 1.5);
+    case 'arc_3x3_TL': return arc(x, y, s * 3, 0, Math.PI / 2);
+    case 'arc_3x3_TR': return arc(x + s * 3, y, s * 3, Math.PI / 2, Math.PI);
+    case 'arc_3x3_BL': return arc(x, y + s * 3, s * 3, -Math.PI / 2, 0);
+    case 'arc_3x3_BR': return arc(x + s * 3, y + s * 3, s * 3, Math.PI, Math.PI * 1.5);
+    case 'diag_1x1_TLBR': return line(x, y, x + s, y + s);
+    case 'diag_1x1_TRBL': return line(x + s, y, x, y + s);
+    case 'diag_2x2_TLBR': return line(x, y, x + s * 2, y + s * 2);
+    case 'diag_2x2_TRBL': return line(x + s * 2, y, x, y + s * 2);
+    case 'diag_3x3_TLBR': return line(x, y, x + s * 3, y + s * 3);
+    case 'diag_3x3_TRBL': return line(x + s * 3, y, x, y + s * 3);
+    case 'circle_2x2': return `<circle cx="${x + s}" cy="${y + s}" r="${s}" />`;
+    case 'circle_3x3': return `<circle cx="${x + s * 1.5}" cy="${y + s * 1.5}" r="${s * 1.5}" />`;
+    default: return '';
+  }
+}
+
+function exportGridSVG() {
+  const cellSize = parseInt(document.getElementById('grid-cellsize').value);
+  const density = parseInt(document.getElementById('grid-density').value);
+  const themeKey = document.getElementById('grid-theme').value;
+  const theme = THEMES[themeKey];
+
+  const cols = Math.floor(canvasW / cellSize);
+  const rows = Math.floor(canvasH / cellSize);
+  const w = cols * cellSize;
+  const h = rows * cellSize;
+
+  const categoryColors = themeKey === 'category'
+    ? ['#1E51CA', '#FF6B35', '#00BFA6', '#9B5DE5', '#FFB800', '#FF4F6F']
+    : null;
+
+  const savedRng = rng;
+  rng = mulberry32(globalSeed);
+
+  const totalCells = cols * rows;
+  const numShapes = Math.max(1, Math.round(totalCells * density / 100));
+  const placements = placeShapes(cols, rows, numShapes, rng);
+
+  const lw = 1.5;
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">\n`;
+  svg += `<rect width="${w}" height="${h}" fill="${theme.bg}" />\n`;
+
+  svg += `<g stroke="${theme.line}" stroke-width="${lw}" fill="none" stroke-linecap="round">\n`;
+  for (let r = 0; r <= rows; r++) {
+    svg += `  <line x1="0" y1="${r * cellSize}" x2="${w}" y2="${r * cellSize}" />\n`;
+  }
+  for (let c = 0; c <= cols; c++) {
+    svg += `  <line x1="${c * cellSize}" y1="0" x2="${c * cellSize}" y2="${h}" />\n`;
+  }
+  svg += `</g>\n`;
+
+  svg += `<g stroke="${theme.line}" stroke-width="${lw}" fill="none" stroke-linecap="round">\n`;
+  for (const p of placements) {
+    const px = p.col * cellSize;
+    const py = p.row * cellSize;
+    let color = theme.line;
+    if (categoryColors) {
+      color = categoryColors[Math.floor(rng() * categoryColors.length)];
+    }
+    const el = shapeToSVG(p.shape, px, py, cellSize);
+    if (categoryColors) {
+      svg += `  ${el.replace('/>', ` stroke="${color}" />`).replace('"/>', `" stroke="${color}" />`)}\n`;
+    } else {
+      svg += `  ${el}\n`;
+    }
+  }
+  svg += `</g>\n`;
+  svg += `</svg>`;
+
+  rng = savedRng;
+
+  const blob = new Blob([svg], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = 'maven-grid-' + cols + 'x' + rows + '-' + Date.now() + '.svg';
+  link.href = url;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportGridClean() {
+  const cellSize = parseInt(document.getElementById('grid-cellsize').value);
+  const density = parseInt(document.getElementById('grid-density').value);
+  const themeKey = document.getElementById('grid-theme').value;
+
+  const cols = Math.floor(canvasW / cellSize);
+  const rows = Math.floor(canvasH / cellSize);
+  const exportW = cols * cellSize;
+  const exportH = rows * cellSize;
+
+  const exportCanvas = document.createElement('canvas');
+  const exportDpr = 2;
+  exportCanvas.width = exportW * exportDpr;
+  exportCanvas.height = exportH * exportDpr;
+  const exportCtx = exportCanvas.getContext('2d');
+  exportCtx.setTransform(exportDpr, 0, 0, exportDpr, 0, 0);
+
+  const savedDpr = dpr;
+  dpr = exportDpr;
+  renderGridCore(exportCtx, exportW, exportH, cellSize, density, themeKey, 0);
+  dpr = savedDpr;
+
+  const link = document.createElement('a');
+  link.download = 'maven-grid-' + cols + 'x' + rows + '-' + Date.now() + '.png';
+  link.href = exportCanvas.toDataURL('image/png');
+  link.click();
+}
+
+document.getElementById('grid-export').addEventListener('click', exportGridClean);
+document.getElementById('grid-export-svg').addEventListener('click', exportGridSVG);
+document.getElementById('dither-export').addEventListener('click', downloadCanvas);
+document.getElementById('lines-export').addEventListener('click', downloadCanvas);
+document.getElementById('comp-export').addEventListener('click', downloadCanvas);
+document.getElementById('download-all').addEventListener('click', downloadCanvas);
+
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════════════════ */
+
+resizeCanvas();
+
+// Preload first instructor photo for dither tab / composition
+loadDitherImage('annie-duke.jpg').then(() => {
+  // Render initial tab
+  renderGrid();
+}).catch(() => {
+  // Still render grid even if photo fails
+  renderGrid();
+});
+
+</script>
+</body>
+</html>
