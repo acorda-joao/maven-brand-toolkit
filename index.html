@@ -334,6 +334,39 @@ select option { background: #0a0f2a; color: #fff; }
   -webkit-backdrop-filter: blur(10px);
 }
 
+/* ── Upload zone ── */
+.upload-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  border: 1.5px dashed rgba(255,255,255,0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--lapis-light);
+  background: rgba(30,81,202,0.08);
+}
+.upload-zone.has-file {
+  border-style: solid;
+  border-color: rgba(255,255,255,0.1);
+}
+.upload-zone input[type="file"] { display: none; }
+.upload-placeholder {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.4;
+  pointer-events: none;
+}
+.upload-zone.has-file .upload-placeholder {
+  color: rgba(255,255,255,0.55);
+}
+
 /* ── Drop hint ── */
 .drop-hint {
   position: absolute;
@@ -356,32 +389,6 @@ select option { background: #0a0f2a; color: #fff; }
   color: rgba(255,255,255,0.3);
 }
 
-/* ══════════════════════════════════════════════
-   COMPOSITION LAYER LIST
-   ══════════════════════════════════════════════ */
-.layer-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.layer-item:last-child { border-bottom: none; }
-.layer-swatch {
-  width: 24px; height: 24px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-.layer-info { flex: 1; }
-.layer-name {
-  font-size: 12px;
-  color: rgba(255,255,255,0.7);
-}
-.layer-opacity {
-  font-size: 10px;
-  color: rgba(255,255,255,0.3);
-  font-variant-numeric: tabular-nums;
-}
 </style>
 </head>
 <body>
@@ -399,7 +406,6 @@ select option { background: #0a0f2a; color: #fff; }
       <button class="tab active" data-tab="grid">Grid</button>
       <button class="tab" data-tab="dither">Dither</button>
       <button class="tab" data-tab="lines">Lines</button>
-      <button class="tab" data-tab="comp">Comp</button>
     </div>
 
     <div class="controls">
@@ -416,18 +422,20 @@ select option { background: #0a0f2a; color: #fff; }
         <div class="control-group">
           <label class="control-label">Density</label>
           <div class="control-row">
-            <input type="range" id="grid-density" min="2" max="40" value="12">
+            <input type="range" id="grid-density" min="0" max="40" value="12">
             <span class="control-value" id="grid-density-val">12%</span>
           </div>
         </div>
         <div class="control-group">
           <label class="control-label">Color Theme</label>
           <select id="grid-theme">
-            <option value="dark-navy">Dark Navy</option>
+            <option value="dark-navy">Dark Lapis</option>
             <option value="light">Light (Cream)</option>
             <option value="lime">Lime</option>
-            <option value="lapis">Lapis</option>
-            <option value="category">Category Colors</option>
+            <option value="berry">Berry</option>
+            <option value="citrus">Citrus</option>
+            <option value="turquoise">Turquoise</option>
+            <option value="lavender">Lavender</option>
           </select>
         </div>
         <div class="divider"></div>
@@ -442,32 +450,11 @@ select option { background: #0a0f2a; color: #fff; }
       <!-- ═══ TAB 2: DITHER ═══ -->
       <div class="control-panel" id="panel-dither">
         <div class="control-group">
-          <label class="control-label">Instructor Photo</label>
-          <select id="dither-photo">
-            <option value="annie-duke.jpg">Annie Duke</option>
-            <option value="wes-kao.jpg">Wes Kao</option>
-            <option value="shreyas-doshi.png">Shreyas Doshi</option>
-            <option value="ethan-evans.jpg">Ethan Evans</option>
-            <option value="marily-nika.jpg">Marily Nika</option>
-            <option value="ronny-kohavi.jpg">Ronny Kohavi</option>
-            <option value="shaw-talebi.jpg">Shaw Talebi</option>
-            <option value="vitaly-friedman.jpg">Vitaly Friedman</option>
-            <option value="dave-kline.jpg">Dave Kline</option>
-            <option value="hamel-husain.jpg">Hamel Husain</option>
-            <option value="jess-goldberg.jpg">Jess Goldberg</option>
-            <option value="aman-khan.jpg">Aman Khan</option>
-            <option value="ben-erez.jpg">Ben Erez</option>
-            <option value="caitlin-sullivan.jpg">Caitlin Sullivan</option>
-            <option value="colin-matthews.png">Colin Matthews</option>
-            <option value="elena-luneva.png">Elena Luneva</option>
-            <option value="everett-berry.jpg">Everett Berry</option>
-            <option value="jason-liu.png">Jason Liu</option>
-            <option value="bryan-bischof.png">Bryan Bischof</option>
-            <option value="hilary-gridley.png">Hilary Gridley</option>
-            <option value="mahesh-yadav.png">Mahesh Yadav</option>
-            <option value="aishwarya-reganti.jpg">Aishwarya Reganti</option>
-            <option value="xinran-ma.png">Xinran Ma</option>
-          </select>
+          <label class="control-label">Photo</label>
+          <label class="upload-zone" id="dither-upload-zone">
+            <input type="file" accept="image/*" id="dither-file-input">
+            <span class="upload-placeholder" id="dither-upload-text">Drop an image or click to upload</span>
+          </label>
         </div>
         <div class="control-group">
           <label class="control-label">Line Spacing</label>
@@ -500,12 +487,12 @@ select option { background: #0a0f2a; color: #fff; }
         <div class="control-group">
           <label class="control-label">Color Scheme</label>
           <select id="dither-scheme">
-            <option value="blue-navy">Blue on Navy</option>
             <option value="navy-cream">Navy on Cream</option>
             <option value="black-lime">Black on Lime</option>
-            <option value="lapis-dark">Lapis on Dark</option>
-            <option value="white-navy">White on Navy</option>
-            <option value="coral-dark">Coral on Dark</option>
+            <option value="mist">Mist</option>
+            <option value="sunrise">Sunrise</option>
+            <option value="berry">Berry</option>
+            <option value="forest">Forest</option>
           </select>
         </div>
         <div class="divider"></div>
@@ -548,13 +535,44 @@ select option { background: #0a0f2a; color: #fff; }
           </div>
         </div>
         <div class="control-group">
+          <label class="control-label">Position</label>
+          <select id="lines-position">
+            <option value="full">Full</option>
+            <option value="bottom">Bottom</option>
+            <option value="top">Top</option>
+            <option value="center">Center</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Height</label>
+          <div class="control-row">
+            <input type="range" id="lines-height" min="5" max="100" value="100">
+            <span class="control-value" id="lines-height-val">100%</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Fade</label>
+          <div class="control-row">
+            <input type="range" id="lines-fade" min="0" max="100" value="0">
+            <span class="control-value" id="lines-fade-val">0%</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Fade Edge</label>
+          <select id="lines-fade-edge">
+            <option value="both">Top & Bottom</option>
+            <option value="top">Top Only</option>
+            <option value="bottom">Bottom Only</option>
+          </select>
+        </div>
+        <div class="control-group">
           <label class="control-label">Palette</label>
           <select id="lines-palette">
-            <option value="lapis">Lapis (Blues)</option>
-            <option value="warm">Warm (Orange/Red)</option>
-            <option value="broadcast">Broadcast (Mixed)</option>
-            <option value="category">Category</option>
-            <option value="mono">Monochrome</option>
+            <option value="lapis">Lapis</option>
+            <option value="sunrise">Sunrise</option>
+            <option value="berry">Berry</option>
+            <option value="forest">Forest</option>
+            <option value="mixed">Mixed</option>
           </select>
         </div>
         <div class="divider"></div>
@@ -564,106 +582,6 @@ select option { background: #0a0f2a; color: #fff; }
         </div>
       </div>
 
-      <!-- ═══ TAB 4: COMPOSITION ═══ -->
-      <div class="control-panel" id="panel-comp">
-        <div class="control-group">
-          <label class="control-label">Layers</label>
-          <div class="layer-item">
-            <div class="layer-swatch" style="background:var(--bg-dark)"></div>
-            <div class="layer-info"><div class="layer-name">Background</div></div>
-            <label class="toggle">
-              <input type="checkbox" id="comp-layer-bg" checked>
-              <span class="toggle-track"></span>
-              <span class="toggle-knob"></span>
-            </label>
-          </div>
-          <div class="layer-item">
-            <div class="layer-swatch" style="background:var(--navy-deep);border:1px solid rgba(255,255,255,0.1)"></div>
-            <div class="layer-info"><div class="layer-name">Grid</div></div>
-            <label class="toggle">
-              <input type="checkbox" id="comp-layer-grid" checked>
-              <span class="toggle-track"></span>
-              <span class="toggle-knob"></span>
-            </label>
-          </div>
-          <div class="layer-item">
-            <div class="layer-swatch" style="background:var(--lapis)"></div>
-            <div class="layer-info"><div class="layer-name">Portrait</div></div>
-            <label class="toggle">
-              <input type="checkbox" id="comp-layer-portrait" checked>
-              <span class="toggle-track"></span>
-              <span class="toggle-knob"></span>
-            </label>
-          </div>
-          <div class="layer-item">
-            <div class="layer-swatch" style="background:linear-gradient(var(--coral),var(--lapis))"></div>
-            <div class="layer-info"><div class="layer-name">Pattern Lines</div></div>
-            <label class="toggle">
-              <input type="checkbox" id="comp-layer-lines" checked>
-              <span class="toggle-track"></span>
-              <span class="toggle-knob"></span>
-            </label>
-          </div>
-          <div class="layer-item">
-            <div class="layer-swatch" style="background:#fff"></div>
-            <div class="layer-info"><div class="layer-name">Text</div></div>
-            <label class="toggle">
-              <input type="checkbox" id="comp-layer-text" checked>
-              <span class="toggle-track"></span>
-              <span class="toggle-knob"></span>
-            </label>
-          </div>
-        </div>
-
-        <div class="control-group">
-          <label class="control-label">Grid Opacity</label>
-          <div class="control-row">
-            <input type="range" id="comp-grid-opacity" min="0" max="100" value="40">
-            <span class="control-value" id="comp-grid-opacity-val">40%</span>
-          </div>
-        </div>
-        <div class="control-group">
-          <label class="control-label">Portrait Opacity</label>
-          <div class="control-row">
-            <input type="range" id="comp-portrait-opacity" min="0" max="100" value="90">
-            <span class="control-value" id="comp-portrait-opacity-val">90%</span>
-          </div>
-        </div>
-        <div class="control-group">
-          <label class="control-label">Lines Opacity</label>
-          <div class="control-row">
-            <input type="range" id="comp-lines-opacity" min="0" max="100" value="70">
-            <span class="control-value" id="comp-lines-opacity-val">70%</span>
-          </div>
-        </div>
-
-        <div class="control-group">
-          <label class="control-label">Preset</label>
-          <select id="comp-preset">
-            <option value="hero">Hero Layout</option>
-            <option value="editorial">Editorial Spread</option>
-            <option value="poster">Poster</option>
-            <option value="card">Card Lockup</option>
-            <option value="minimal">Minimal</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label class="control-label">Headline</label>
-          <select id="comp-headline">
-            <option value="Learn AI from humans.">Learn AI from humans.</option>
-            <option value="Real experts. Real skills.">Real experts. Real skills.</option>
-            <option value="The next satisfying career step.">The next satisfying career step.</option>
-            <option value="Where ambition meets expertise.">Where ambition meets expertise.</option>
-          </select>
-        </div>
-
-        <div class="divider"></div>
-        <div class="btn-row">
-          <button class="btn btn-primary" id="comp-regenerate">Compose</button>
-          <button class="btn" id="comp-export">Export</button>
-        </div>
-      </div>
     </div>
 
     <div class="sidebar-footer">
@@ -703,28 +621,30 @@ function newSeed() {
 
 // ── Color Palettes ────────────────────────────────────────────
 const PALETTES = {
-  lapis: ['#0A1240', '#101b57', '#1E51CA', '#3A6FE0', '#7cbeff', '#B0D4FF'],
-  warm: ['#FF6B35', '#FF4F6F', '#FFB800', '#E84D1A', '#FF8A5C', '#FFD166'],
-  broadcast: ['#1E51CA', '#FF6B35', '#00BFA6', '#FFB800', '#FF4F6F', '#7cbeff', '#cdff92'],
-  category: ['#1E51CA', '#FF6B35', '#00BFA6', '#9B5DE5', '#FFB800', '#FF4F6F', '#0F1B4C'],
-  mono: ['#0F1B4C', '#1a2a6a', '#253988', '#3048a6', '#3b57c4', '#4666e2'],
+  lapis:   ['#71aeff', '#3e89ff', '#2465e8', '#1e51ca', '#1c41ab', '#1c368d'],
+  sunrise: ['#feb394', '#f88b5c', '#e45f18', '#c43900', '#ab2200', '#911700'],
+  berry:   ['#e18ff2', '#d662ee', '#b429ca', '#931faa', '#7c0c93', '#6a0b7e'],
+  forest:  ['#69c662', '#35a92e', '#008900', '#077202', '#125e0e', '#154d11'],
+  mixed:   ['#2465e8', '#e45f18', '#35a92e', '#b429ca', '#7cbeff', '#cdff92'],
 };
 
 const THEMES = {
-  'dark-navy': { bg: '#080c28', line: '#101b57', accent: '#1E51CA' },
+  'dark-navy': { bg: '#080C28', line: '#1E2542', accent: '#1E51CA' },
   'light':     { bg: '#FAF7F2', line: '#0F1B4C', accent: '#1E51CA' },
   'lime':      { bg: '#cdff92', line: '#0F1B4C', accent: '#1E51CA' },
-  'lapis':     { bg: '#080c28', line: '#1E51CA', accent: '#7cbeff' },
-  'category':  { bg: '#080c28', line: '#1E51CA', accent: '#FF6B35' },
+  'berry':     { bg: '#460952', line: '#7C0C93', accent: '#7C0C93' },
+  'citrus':    { bg: '#401D11', line: '#714100', accent: '#714100' },
+  'turquoise': { bg: '#0C2E3C', line: '#00625A', accent: '#00625A' },
+  'lavender':  { bg: '#2F1A5E', line: '#6711A8', accent: '#6711A8' },
 };
 
 const DITHER_SCHEMES = {
-  'blue-navy':  { bg: '#080c28', line: '#1E51CA' },
   'navy-cream': { bg: '#FAF7F2', line: '#0F1B4C' },
-  'black-lime': { bg: '#cdff92', line: '#0F1B4C' },
-  'lapis-dark': { bg: '#080c28', line: '#3A6FE0' },
-  'white-navy': { bg: '#0F1B4C', line: '#ffffff' },
-  'coral-dark': { bg: '#080c28', line: '#FF4F6F' },
+  'black-lime': { bg: '#cdff92', line: '#101b57' },
+  'mist':       { bg: '#eceff5', line: '#080c28' },
+  'sunrise':    { bg: '#ffe9e0', line: '#510b00' },
+  'berry':      { bg: '#fbe7ff', line: '#460952' },
+  'forest':     { bg: '#e2f4e0', line: '#0c3209' },
 };
 
 // ── Canvas Setup ──────────────────────────────────────────────
@@ -773,7 +693,6 @@ function renderCurrentTab() {
     case 'grid': renderGrid(); break;
     case 'dither': renderDither(); break;
     case 'lines': renderLines(); break;
-    case 'comp': renderComposition(); break;
   }
 }
 
@@ -979,8 +898,8 @@ function renderGridCore(c, w, h, cellSize, density, themeKey, seedOffset, option
     : null;
 
   const totalCells = cols * rows;
-  const numShapes = Math.max(1, Math.round(totalCells * density / 100));
-  const placements = placeShapes(cols, rows, numShapes, rng);
+  const numShapes = Math.round(totalCells * density / 100);
+  const placements = numShapes > 0 ? placeShapes(cols, rows, numShapes, rng) : [];
 
   // Grid lines (structural layer — same weight and color as shapes)
   c.save();
@@ -1051,13 +970,11 @@ document.getElementById('grid-regenerate').addEventListener('click', () => {
 let ditherImage = null;
 let ditherImageData = null;
 
-function loadDitherImage(filename) {
+function loadDitherFromDataURL(dataURL, fileName) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
     img.onload = () => {
       ditherImage = img;
-      // Extract pixel data
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = img.naturalWidth;
       tempCanvas.height = img.naturalHeight;
@@ -1068,14 +985,24 @@ function loadDitherImage(filename) {
         width: tempCanvas.width,
         height: tempCanvas.height,
       };
+      const uploadText = document.getElementById('dither-upload-text');
+      const uploadZone = document.getElementById('dither-upload-zone');
+      if (uploadText) uploadText.textContent = fileName || 'Image loaded';
+      if (uploadZone) uploadZone.classList.add('has-file');
       resolve();
     };
-    img.onerror = () => {
-      // Try an alternative path
-      reject(new Error('Could not load image: ' + filename));
-    };
-    img.src = 'images/' + filename;
+    img.onerror = () => reject(new Error('Could not load image'));
+    img.src = dataURL;
   });
+}
+
+function handleDitherFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    loadDitherFromDataURL(e.target.result, file.name).then(() => renderDither());
+  };
+  reader.readAsDataURL(file);
 }
 
 function sampleColumn(imgData, colX, stripWidth) {
@@ -1164,13 +1091,10 @@ function renderDither() {
   ctx.fillRect(0, 0, canvasW, canvasH);
 
   if (!ditherImageData) {
-    // Show loading hint
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
     ctx.font = '14px ' + getComputedStyle(document.body).fontFamily;
     ctx.textAlign = 'center';
-    ctx.fillText('Loading image...', canvasW / 2, canvasH / 2);
-    // Load first image
-    loadDitherImage(document.getElementById('dither-photo').value).then(() => renderDither());
+    ctx.fillText('Upload a photo to get started', canvasW / 2, canvasH / 2);
     return;
   }
 
@@ -1237,10 +1161,17 @@ function renderDither() {
 }
 
 // ── Dither controls ──
-document.getElementById('dither-photo').addEventListener('change', (e) => {
-  ditherImageData = null;
-  ditherImage = null;
-  loadDitherImage(e.target.value).then(() => renderDither());
+document.getElementById('dither-file-input').addEventListener('change', (e) => {
+  if (e.target.files[0]) handleDitherFile(e.target.files[0]);
+});
+
+const ditherDropZone = document.getElementById('dither-upload-zone');
+ditherDropZone.addEventListener('dragover', (e) => { e.preventDefault(); ditherDropZone.classList.add('dragover'); });
+ditherDropZone.addEventListener('dragleave', () => ditherDropZone.classList.remove('dragover'));
+ditherDropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  ditherDropZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleDitherFile(e.dataTransfer.files[0]);
 });
 
 syncSlider('dither-spacing', 'px', () => renderDither());
@@ -1262,6 +1193,9 @@ function renderLines() {
   const gapProb = parseInt(document.getElementById('lines-gap').value) / 100;
   const paletteKey = document.getElementById('lines-palette').value;
   const palette = PALETTES[paletteKey];
+  const position = document.getElementById('lines-position').value;
+  const heightPct = parseInt(document.getElementById('lines-height').value) / 100;
+  const fadeAmount = parseInt(document.getElementById('lines-fade').value) / 100;
 
   rng = mulberry32(globalSeed);
 
@@ -1269,31 +1203,49 @@ function renderLines() {
   ctx.fillStyle = '#080c28';
   ctx.fillRect(0, 0, canvasW, canvasH);
 
-  let y = 0;
+  const regionH = canvasH * heightPct;
+  let startY;
+  switch (position) {
+    case 'bottom': startY = canvasH - regionH; break;
+    case 'top':    startY = 0; break;
+    case 'center': startY = (canvasH - regionH) / 2; break;
+    default:       startY = 0; break;
+  }
+  const endY = startY + regionH;
+  const fadeZone = regionH * fadeAmount;
 
-  while (y < canvasH) {
-    // Stripe height based on energy
+  let y = startY;
+
+  while (y < endY) {
     const baseH = 1 + rng() * (maxHeight - 1);
     const h = Math.max(1, Math.round(baseH * (0.3 + 0.7 * energy)));
 
-    // Pick color with weighted random
     const colorIdx = Math.floor(rng() * palette.length);
     const color = palette[colorIdx];
 
-    // Alpha variation for depth
     const alpha = 0.4 + rng() * 0.6;
 
-    // Sometimes skip (gap)
     if (rng() > gapProb) {
+      const fadeEdge = document.getElementById('lines-fade-edge').value;
+      const distTop = y - startY;
+      const distBottom = endY - y;
+      let distFromEdge;
+      if (fadeEdge === 'top') distFromEdge = distTop;
+      else if (fadeEdge === 'bottom') distFromEdge = distBottom;
+      else distFromEdge = Math.min(distTop, distBottom);
+      const fadeFactor = fadeZone > 0
+        ? Math.min(1, distFromEdge / fadeZone)
+        : 1;
+      const smoothFade = fadeFactor * fadeFactor * (3 - 2 * fadeFactor);
+
       ctx.fillStyle = color;
-      ctx.globalAlpha = alpha;
+      ctx.globalAlpha = alpha * smoothFade;
       ctx.fillRect(0, snap(y), canvasW, h);
       ctx.globalAlpha = 1;
     }
 
     y += h;
 
-    // Add gap
     if (rng() < gapProb) {
       const gap = 1 + Math.floor(rng() * 3);
       y += gap;
@@ -1306,6 +1258,10 @@ function renderLines() {
 syncSlider('lines-energy', '%', () => renderLines());
 syncSlider('lines-maxheight', 'px', () => renderLines());
 syncSlider('lines-gap', '%', () => renderLines());
+document.getElementById('lines-position').addEventListener('change', () => renderLines());
+syncSlider('lines-height', '%', () => renderLines());
+syncSlider('lines-fade', '%', () => renderLines());
+document.getElementById('lines-fade-edge').addEventListener('change', () => renderLines());
 document.getElementById('lines-palette').addEventListener('change', () => renderLines());
 document.getElementById('lines-regenerate').addEventListener('click', () => {
   newSeed();
@@ -1313,292 +1269,6 @@ document.getElementById('lines-regenerate').addEventListener('click', () => {
 });
 
 
-/* ══════════════════════════════════════════════════════════════
-   TAB 4 — COMPOSITION
-   ══════════════════════════════════════════════════════════════ */
-
-// Offscreen canvases for each layer
-let offGrid, offPortrait, offLines;
-
-function createOffscreen(w, h) {
-  const c = document.createElement('canvas');
-  c.width = w * dpr;
-  c.height = h * dpr;
-  const cx = c.getContext('2d');
-  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  return { canvas: c, ctx: cx, w, h };
-}
-
-function renderGridToOffscreen(off) {
-  renderGridCore(off.ctx, off.w, off.h, 100, 12, 'dark-navy', 1, { skipBackground: true });
-}
-
-function renderPortraitToOffscreen(off) {
-  const { ctx: octx, w, h } = off;
-
-  octx.clearRect(0, 0, w, h);
-
-  if (!ditherImageData || !ditherImage) return;
-
-  const img = ditherImage;
-  const imgData = ditherImageData;
-  const spacing = 5;
-  const minWidth = 0.3;
-  const maxWidth = 5;
-  const gamma = 0.75;
-
-  // Position portrait in center-right area
-  const imgAspect = imgData.width / imgData.height;
-  const regionW = w * 0.45;
-  const regionH = h * 0.85;
-  const regionX = w * 0.5;
-  const regionY = h * 0.075;
-
-  let drawW, drawH;
-  if (imgAspect > regionW / regionH) {
-    drawW = regionW;
-    drawH = regionW / imgAspect;
-  } else {
-    drawH = regionH;
-    drawW = regionH * imgAspect;
-  }
-
-  const drawX = regionX + (regionW - drawW) / 2;
-  const drawY = regionY + (regionH - drawH) / 2;
-
-  const numColumns = Math.floor(drawW / spacing);
-  const stripWidthPx = (spacing / drawW) * imgData.width;
-  const numSamples = Math.ceil(drawH / 2);
-
-  octx.strokeStyle = '#1E51CA';
-  octx.lineCap = 'round';
-
-  for (let col = 0; col < numColumns; col++) {
-    const canvasX = drawX + col * spacing + spacing / 2;
-    const imgX = (col * spacing + spacing / 2) / drawW * imgData.width;
-
-    const profile = sampleColumnProfile(imgData, imgX, stripWidthPx, numSamples);
-    const smoothed = smoothArray(profile, 3);
-
-    for (let i = 0; i < numSamples - 1; i++) {
-      const y1 = drawY + (i / numSamples) * drawH;
-      const y2 = drawY + ((i + 1) / numSamples) * drawH;
-
-      const lum = smoothed[i];
-      const darkness = 1 - lum;
-      const corrected = Math.pow(darkness, gamma);
-      const lineW = minWidth + corrected * (maxWidth - minWidth);
-
-      octx.lineWidth = lineW;
-      octx.beginPath();
-      octx.moveTo(canvasX, y1);
-      octx.lineTo(canvasX, y2);
-      octx.stroke();
-    }
-  }
-}
-
-function renderLinesToOffscreen(off, preset) {
-  const { ctx: octx, w, h } = off;
-  const savedRng = rng;
-  rng = mulberry32(globalSeed + 2);
-
-  octx.clearRect(0, 0, w, h);
-
-  const palette = PALETTES.broadcast;
-  let y, regionY, regionH;
-
-  switch (preset) {
-    case 'poster':
-      regionY = 0; regionH = h;
-      break;
-    case 'editorial':
-      regionY = h * 0.7; regionH = h * 0.3;
-      break;
-    case 'card':
-      regionY = 0; regionH = h * 0.15;
-      break;
-    default:
-      regionY = h * 0.85; regionH = h * 0.15;
-  }
-
-  y = regionY;
-  while (y < regionY + regionH) {
-    const h2 = 1 + Math.floor(rng() * 7);
-    const color = palette[Math.floor(rng() * palette.length)];
-    const alpha = 0.4 + rng() * 0.6;
-
-    if (rng() > 0.25) {
-      octx.fillStyle = color;
-      octx.globalAlpha = alpha;
-      octx.fillRect(0, y, w, h2);
-    }
-
-    y += h2;
-    if (rng() < 0.3) y += 1 + Math.floor(rng() * 3);
-  }
-
-  octx.globalAlpha = 1;
-  rng = savedRng;
-}
-
-function renderComposition() {
-  const showBg = document.getElementById('comp-layer-bg').checked;
-  const showGrid = document.getElementById('comp-layer-grid').checked;
-  const showPortrait = document.getElementById('comp-layer-portrait').checked;
-  const showLines = document.getElementById('comp-layer-lines').checked;
-  const showText = document.getElementById('comp-layer-text').checked;
-
-  const gridOpacity = parseInt(document.getElementById('comp-grid-opacity').value) / 100;
-  const portraitOpacity = parseInt(document.getElementById('comp-portrait-opacity').value) / 100;
-  const linesOpacity = parseInt(document.getElementById('comp-lines-opacity').value) / 100;
-
-  const preset = document.getElementById('comp-preset').value;
-  const headline = document.getElementById('comp-headline').value;
-
-  // Recreate offscreen canvases at current size
-  offGrid = createOffscreen(canvasW, canvasH);
-  offPortrait = createOffscreen(canvasW, canvasH);
-  offLines = createOffscreen(canvasW, canvasH);
-
-  // Render each layer to its offscreen canvas
-  renderGridToOffscreen(offGrid);
-  renderPortraitToOffscreen(offPortrait);
-  renderLinesToOffscreen(offLines, preset);
-
-  // Composite to main canvas
-  ctx.clearRect(0, 0, canvasW, canvasH);
-
-  // Layer 1: Background
-  if (showBg) {
-    ctx.fillStyle = '#080c28';
-    ctx.fillRect(0, 0, canvasW, canvasH);
-  }
-
-  // Layer 2: Grid
-  if (showGrid) {
-    ctx.save();
-    ctx.globalAlpha = gridOpacity;
-    ctx.drawImage(offGrid.canvas, 0, 0, canvasW, canvasH);
-    ctx.restore();
-  }
-
-  // Layer 3: Portrait (dither)
-  if (showPortrait) {
-    ctx.save();
-    ctx.globalAlpha = portraitOpacity;
-    ctx.drawImage(offPortrait.canvas, 0, 0, canvasW, canvasH);
-    ctx.restore();
-  }
-
-  // Layer 4: Pattern lines
-  if (showLines) {
-    ctx.save();
-    ctx.globalAlpha = linesOpacity;
-    ctx.globalCompositeOperation = 'screen';
-    ctx.drawImage(offLines.canvas, 0, 0, canvasW, canvasH);
-    ctx.restore();
-  }
-
-  // Layer 5: Text
-  if (showText) {
-    ctx.save();
-
-    let textX, textY, textMaxW, textAlign, fontSize;
-
-    switch (preset) {
-      case 'editorial':
-        textX = canvasW * 0.06;
-        textY = canvasH * 0.45;
-        textMaxW = canvasW * 0.38;
-        textAlign = 'left';
-        fontSize = Math.min(canvasW * 0.045, 56);
-        break;
-      case 'poster':
-        textX = canvasW * 0.5;
-        textY = canvasH * 0.5;
-        textMaxW = canvasW * 0.6;
-        textAlign = 'center';
-        fontSize = Math.min(canvasW * 0.06, 72);
-        break;
-      case 'card':
-        textX = canvasW * 0.06;
-        textY = canvasH * 0.88;
-        textMaxW = canvasW * 0.5;
-        textAlign = 'left';
-        fontSize = Math.min(canvasW * 0.035, 42);
-        break;
-      case 'minimal':
-        textX = canvasW * 0.5;
-        textY = canvasH * 0.5;
-        textMaxW = canvasW * 0.7;
-        textAlign = 'center';
-        fontSize = Math.min(canvasW * 0.05, 64);
-        break;
-      default: // hero
-        textX = canvasW * 0.06;
-        textY = canvasH * 0.38;
-        textMaxW = canvasW * 0.42;
-        textAlign = 'left';
-        fontSize = Math.min(canvasW * 0.05, 64);
-    }
-
-    // Category label above headline
-    ctx.font = `600 ${Math.max(10, fontSize * 0.2)}px ${getComputedStyle(document.body).fontFamily}`;
-    ctx.fillStyle = '#7cbeff';
-    ctx.textAlign = textAlign;
-    ctx.letterSpacing = '0.1em';
-    ctx.fillText('MAVEN', textX, textY - fontSize * 0.6);
-
-    // Headline
-    ctx.font = `900 ${fontSize}px 'Source Serif 4', Georgia, serif`;
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = textAlign;
-
-    // Word-wrap headline
-    const words = headline.split(' ');
-    let line = '';
-    let lineY = textY;
-    const lineHeight = fontSize * 1.1;
-
-    for (const word of words) {
-      const testLine = line + (line ? ' ' : '') + word;
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > textMaxW && line) {
-        ctx.fillText(line, textX, lineY);
-        line = word;
-        lineY += lineHeight;
-      } else {
-        line = testLine;
-      }
-    }
-    ctx.fillText(line, textX, lineY);
-
-    // Subtitle below
-    const subtitleY = lineY + lineHeight * 1.2;
-    ctx.font = `400 ${Math.max(12, fontSize * 0.26)}px ${getComputedStyle(document.body).fontFamily}`;
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    ctx.fillText('Expert-led courses for ambitious professionals', textX, subtitleY);
-
-    ctx.restore();
-  }
-}
-
-// ── Composition controls ──
-syncSlider('comp-grid-opacity', '%', () => renderComposition());
-syncSlider('comp-portrait-opacity', '%', () => renderComposition());
-syncSlider('comp-lines-opacity', '%', () => renderComposition());
-
-['comp-layer-bg', 'comp-layer-grid', 'comp-layer-portrait', 'comp-layer-lines', 'comp-layer-text'].forEach(id => {
-  document.getElementById(id).addEventListener('change', () => renderComposition());
-});
-
-document.getElementById('comp-preset').addEventListener('change', () => renderComposition());
-document.getElementById('comp-headline').addEventListener('change', () => renderComposition());
-document.getElementById('comp-regenerate').addEventListener('click', () => {
-  newSeed();
-  renderComposition();
-});
 
 
 /* ══════════════════════════════════════════════════════════════
@@ -1669,8 +1339,8 @@ function exportGridSVG() {
   rng = mulberry32(globalSeed);
 
   const totalCells = cols * rows;
-  const numShapes = Math.max(1, Math.round(totalCells * density / 100));
-  const placements = placeShapes(cols, rows, numShapes, rng);
+  const numShapes = Math.round(totalCells * density / 100);
+  const placements = numShapes > 0 ? placeShapes(cols, rows, numShapes, rng) : [];
 
   const lw = 1.5;
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">\n`;
@@ -1746,7 +1416,6 @@ document.getElementById('grid-export').addEventListener('click', exportGridClean
 document.getElementById('grid-export-svg').addEventListener('click', exportGridSVG);
 document.getElementById('dither-export').addEventListener('click', downloadCanvas);
 document.getElementById('lines-export').addEventListener('click', downloadCanvas);
-document.getElementById('comp-export').addEventListener('click', downloadCanvas);
 document.getElementById('download-all').addEventListener('click', downloadCanvas);
 
 
@@ -1755,15 +1424,7 @@ document.getElementById('download-all').addEventListener('click', downloadCanvas
    ══════════════════════════════════════════════════════════════ */
 
 resizeCanvas();
-
-// Preload first instructor photo for dither tab / composition
-loadDitherImage('annie-duke.jpg').then(() => {
-  // Render initial tab
-  renderGrid();
-}).catch(() => {
-  // Still render grid even if photo fails
-  renderGrid();
-});
+renderGrid();
 
 </script>
 </body>
